@@ -18,6 +18,7 @@
  *      Author: More Zeng
  */
 
+#define BOOST_TIMER_ENABLE_DEPRECATED
 
 #include "bdt/stdafx.h"
 #include "bdt/ServiceServer.h"
