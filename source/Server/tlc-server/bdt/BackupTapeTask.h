@@ -29,7 +29,7 @@
 
 /* Boost headers */
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/group.hpp>
+#include <boost/thread/thread.hpp>   // use thread.hpp instead of group.hpp
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/timer/timer.hpp>   // non‑deprecated timer header
 
