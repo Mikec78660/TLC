@@ -18,30 +18,29 @@
  *      Author: More Zeng
  */
 
-
 #pragma once
 #include "MetaManager.h"
 #include "FileMetaParser.h"
 #include "../ltfs_management/CatalogDbManager.h"
+#include <boost/timer/timer.hpp>   // use the non-deprecated timer header
 using namespace ltfs_management;
-
 
 namespace bdt
 {
-	struct TapeBackupItem
-	{
-		BackupItem 	item;
-		bool		running;
+    struct TapeBackupItem
+    {
+        BackupItem 	item;
+        bool		running;
         bool        isMultiple;
         string      manifest;
         int         totalMultiple;
         int         numberMultiple;
-	};
+    };
 
     struct PendingTapes
     {
-    	vector<string> bkTapes;
-    	off_t		maxSize;
+        vector<string> bkTapes;
+        off_t		maxSize;
     };
 
     struct MultipleFile
@@ -123,4 +122,3 @@ namespace bdt
     };
 
 }
-
