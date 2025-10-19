@@ -28,8 +28,7 @@
 #include <sys/types.h>
 
 /* Boost headers */
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>   // use thread.hpp instead of group.hpp
+#include <boost/thread.hpp>   // provides boost::thread and boost::thread_group
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/timer/timer.hpp>   // non‑deprecated timer header
 
@@ -121,7 +120,8 @@ namespace bdt
         void InsertTapeBackupItem(const BackupItem & item);
         void DeleteTapeBackupItem(const BackupItem & item);
 
-        std::auto_ptr<boost::thread_group> threads_;
+        // Use a vector of boost::thread instead of boost::thread_group to avoid missing header
+        std::unique_ptr<std::vector<boost::thread>> threads_;
         TapeManagerInterface * tape_;
         CacheManager * cache_;
         ScheduleInterface * schedule_;
