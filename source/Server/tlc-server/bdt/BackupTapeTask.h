@@ -19,10 +19,25 @@
  */
 
 #pragma once
+
+/* Standard library headers */
+#include <string>
+#include <vector>
+#include <map>
+#include <memory>
+#include <sys/types.h>
+
+/* Boost headers */
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/group.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/timer/timer.hpp>   // non‑deprecated timer header
+
+/* Project headers */
 #include "MetaManager.h"
 #include "FileMetaParser.h"
 #include "../ltfs_management/CatalogDbManager.h"
-#include <boost/timer/timer.hpp>   // use the non-deprecated timer header
+
 using namespace ltfs_management;
 
 namespace bdt
@@ -32,14 +47,14 @@ namespace bdt
         BackupItem 	item;
         bool		running;
         bool        isMultiple;
-        string      manifest;
+        std::string      manifest;
         int         totalMultiple;
         int         numberMultiple;
     };
 
     struct PendingTapes
     {
-        vector<string> bkTapes;
+        std::vector<std::string> bkTapes;
         off_t		maxSize;
     };
 
@@ -47,8 +62,8 @@ namespace bdt
     {
         boost::posix_time::ptime time;
         int total;
-        vector<long long> numbers;
-        vector<bool> exists;
+        std::vector<long long> numbers;
+        std::vector<bool> exists;
 
         MultipleFile()
         : total(0)
@@ -96,28 +111,28 @@ namespace bdt
         Start();
 
     private:
-        void StartBackupSub(const vector<string>& bkTapes, off_t maxSize);
-        void HandleBackupSub(const vector<string>& bkTapes, off_t maxSize);
-        bool Backup(const vector<BackupItem> &items, const vector<string>& tapes);
-        void SetBackupTapes(const vector<string>& bkTapes, bool bRunning);
+        void StartBackupSub(const std::vector<std::string>& bkTapes, off_t maxSize);
+        void HandleBackupSub(const std::vector<std::string>& bkTapes, off_t maxSize);
+        bool Backup(const std::vector<BackupItem> &items, const std::vector<std::string>& tapes);
+        void SetBackupTapes(const std::vector<std::string>& bkTapes, bool bRunning);
         int GetRunningNum();
-        bool IsTapesRunning(const vector<string>& tapes);
-        bool GetFileItemToBackup(vector<BackupItem>& fileItems, off_t& maxSize, off_t maxFileSize = 100*1024*1024, unsigned long maxFileNum = 1000);
+        bool IsTapesRunning(const std::vector<std::string>& tapes);
+        bool GetFileItemToBackup(std::vector<BackupItem>& fileItems, off_t& maxSize, off_t maxFileSize = 100*1024*1024, unsigned long maxFileNum = 1000);
         void InsertTapeBackupItem(const BackupItem & item);
         void DeleteTapeBackupItem(const BackupItem & item);
 
-        auto_ptr<boost::thread_group> threads_;
+        std::auto_ptr<boost::thread_group> threads_;
         TapeManagerInterface * tape_;
         CacheManager * cache_;
         ScheduleInterface * schedule_;
         MetaManager * meta_;
-        map<string, bool>	tapes_;
+        std::map<std::string, bool>	tapes_;
         boost::mutex 		tapesMutex_;
-        map<unsigned long long, TapeBackupItem>	files_;
-        map<string, MultipleFile> multipleFiles_;
+        std::map<unsigned long long, TapeBackupItem>	files_;
+        std::map<std::string, MultipleFile> multipleFiles_;
         boost::mutex 		filesMutex_;
-        string				uuid_;
-        auto_ptr<CatalogDbManager> catalogDb_;
+        std::string				uuid_;
+        std::auto_ptr<CatalogDbManager> catalogDb_;
         FileMetaParser      parser_;
     };
 
