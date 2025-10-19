@@ -33,7 +33,3 @@ Everybody is highly invited to participate in this project and can join the deve
 
 Contact:
 --------
-Andreas Kleber,
-andreas.kleber@bdt.de,
-+49 (151) 148650 65
-
