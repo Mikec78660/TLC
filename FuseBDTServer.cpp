@@ -19,6 +19,9 @@
  */
 
 
+// Define this to suppress deprecated boost timer header error
+#define BOOST_TIMER_ENABLE_DEPRECATED
+
 #include "bdt/stdafx.h"
 #include "bdt/ServiceServer.h"
 #include "bdt/TapeManagerProxyServer.h"
@@ -27,9 +30,6 @@
 #include "bdt/CacheMonitorServer.h"
 
 #include "socket/ltfsTaskManagement.h"
-
-// Define this to suppress deprecated boost timer header error
-#define BOOST_TIMER_ENABLE_DEPRECATED
 
 using namespace bdt;
 namespace bdt
