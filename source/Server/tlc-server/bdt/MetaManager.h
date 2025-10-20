@@ -20,6 +20,14 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+#include <map>
+#include <memory>
+#include <boost/filesystem.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
+
 namespace bdt
 {
 
@@ -45,10 +53,10 @@ namespace bdt
         GetInode(const fs::path & path);
 
         bool
-        CreateFile(const fs::path & path,mode_t mode);
+        CreateFile(const fs::path & path, mode_t mode);
 
         bool
-        CreateFolder(const fs::path & path,mode_t mode);
+        CreateFolder(const fs::path & path, mode_t mode);
 
         bool
         DeleteInode(const fs::path & path);
@@ -57,7 +65,7 @@ namespace bdt
         RenameInode(const fs::path & from, const fs::path & to);
 
         bool
-        GetActiveStat(const fs::path & path,struct stat & stat);
+        GetActiveStat(const fs::path & path, struct stat & stat);
 
         FileOperationInterface *
         GetFileOperation(const fs::path & path, int flags);
@@ -66,13 +74,13 @@ namespace bdt
         CheckFreeCapacity();
 
         void
-        GetBackupList(vector<BackupItem> & list);
+        GetBackupList(std::vector<BackupItem> & list);
 
         bool
         Backup(
                 const fs::path & path,
                 FileOperationInterface * file,
-                const string & tape,
+                const std::string & tape,
                 fs::path & pathNew,
                 bool & writeTape );
 
@@ -87,36 +95,25 @@ namespace bdt
 
     private:
         boost::mutex mutex_;
-
         fs::path folder_;
         std::unique_ptr<MetaDatabase> database_;
         CacheManager * cache_;
-
-        typedef map<fs::path, InodeHandler *> MapHandlerType;
-        typedef vector<InodeHandler *> ListHandlerType;
-
+        typedef std::map<fs::path, InodeHandler *> MapHandlerType;
+        typedef std::vector<InodeHandler *> ListHandlerType;
         MapHandlerType handlersOpen_;
         ListHandlerType handlersDelete_;
-
         boost::posix_time::ptime check_;
-
         std::unique_ptr<boost::thread> checkHandlersThread_;
-
         void
         CheckHandlersTask();
-
         void
         CheckHandlers(bool checkOpenHandlers);
-
         bool
         GetCapacity(off_t & usedCapacity, off_t & freeCapacity);
-
         fs::path
         SaveHandlersPathname();
-
         bool
         SaveHandlers();
-
         void
         ScanHandlers(const fs::path & folder);
     };

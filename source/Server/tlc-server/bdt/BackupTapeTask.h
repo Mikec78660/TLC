@@ -20,18 +20,12 @@
 
 #pragma once
 
-/* Standard library headers */
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
-#include <sys/types.h>
-
-/* Boost headers */
-#include <boost/thread.hpp>   // provides boost::thread and boost::thread_group
+#include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-
-/* Project headers */
 #include "MetaManager.h"
 #include "FileMetaParser.h"
 #include "../ltfs_management/CatalogDbManager.h"
@@ -40,6 +34,7 @@ using namespace ltfs_management;
 
 namespace bdt
 {
+
     struct TapeBackupItem
     {
         BackupItem 	item;
@@ -75,11 +70,10 @@ namespace bdt
             if ( total == total_ ) {
                 return;
             }
-
             total = total_;
             numbers.resize(total);
             exists.resize(total);
-            for (int i=0; i<total; ++i) {
+            for (int i = 0; i < total; ++i) {
                 numbers[i] = -1;
                 exists[i] = false;
             }
@@ -88,7 +82,7 @@ namespace bdt
         bool
         IsFull()
         {
-            for (int i=0; i<total; ++i) {
+            for (int i = 0; i < total; ++i) {
                 if (numbers[i] < 0) {
                     return false;
                 }
@@ -119,7 +113,6 @@ namespace bdt
         void InsertTapeBackupItem(const BackupItem & item);
         void DeleteTapeBackupItem(const BackupItem & item);
 
-        // Use boost::thread_group to manage backup threads
         std::unique_ptr<boost::thread_group> threads_;
         TapeManagerInterface * tape_;
         CacheManager * cache_;
