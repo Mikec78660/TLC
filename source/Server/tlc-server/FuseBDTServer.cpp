@@ -18,7 +18,6 @@
  *      Author: More Zeng
  */
 
-#define BOOST_TIMER_ENABLE_DEPRECATED
 
 #include "bdt/stdafx.h"
 #include "bdt/ServiceServer.h"
@@ -107,18 +106,11 @@ int main(int argc, char *argv[])
     char cmd[128];
     char vfsserver_pid_file[256];
     char *programname = strrchr(argv[0], '/');
-    if (programname) {
-        programname++; // skip '/'
-    } else {
-        programname = argv[0];
-    }
-    // Use snprintf to avoid format overflow
-    snprintf(vfsserver_pid_file, sizeof(vfsserver_pid_file),
-             "%s%s.pid", vfsser_pid_path, programname);
-    snprintf(cmd, sizeof(cmd), "echo %d > %s", getpid(), vfsserver_pid_file);
+    sprintf(vfsserver_pid_file, "%s%s.pid",vfsser_pid_path, programname);
+    sprintf(cmd, "echo %d > %s", getpid(), vfsserver_pid_file);
     if(0 != ::system(cmd))
     {
-        LogError("Failed to write pid to " << vfsserver_pid_file);
+    	LogError("Failed to write pid to " << vfsserver_pid_file);
     }
 
 
@@ -148,29 +140,30 @@ int main(int argc, char *argv[])
     TapeLibraryMgr::Instance()->PreventChangerMediaRemoval(true);
 
 
-    using namespace ltfs_soapserver;
-    SystemHwMode sysHwMode = TapeLibraryMgr::Instance()->GetSystemHwMode();
-    if (sysHwMode == SYSTEM_HW_NEED_DIAGNOSE || sysHwMode == SYSTEM_HW_DIAGNOSING) {
-        LogInfo("Dirty shutdown, share and task will not be started.");
-    } else if(sysHwMode == SYSTEM_HW_NO_LICENSE){
-        LogInfo("No valid license, share and task will not be started.");
-    } else {
-        //mount all shares
-        int mountRet = TapeLibraryMgr::Instance()->MountAllShare();
-        if (mountRet != 0)
-        {
-            LogError("Failed to mount all samba shares:" << mountRet);
-        }
-        //Load Queue
-        ltfs_soapserver::TaskManagement::GetInstance()->LoadTaskQueue();
-    }
+	using namespace ltfs_soapserver;
+	SystemHwMode sysHwMode = TapeLibraryMgr::Instance()->GetSystemHwMode();
+	if (sysHwMode == SYSTEM_HW_NEED_DIAGNOSE || sysHwMode == SYSTEM_HW_DIAGNOSING) {
+		LogInfo("Dirty shutdown, share and task will not be started.");
+	}else if(sysHwMode == SYSTEM_HW_NO_LICENSE){
+		LogInfo("No valid license, share and task will not be started.");
+	}
+	else {
+		//mount all shares
+		int mountRet = TapeLibraryMgr::Instance()->MountAllShare();
+		if (mountRet != 0)
+		{
+			LogError("Failed to mount all samba shares:" << mountRet);
+		}
+		//Load Queue
+		ltfs_soapserver::TaskManagement::GetInstance()->LoadTaskQueue();
+	}
 
-    // add or update tape group for openstack swift node
-    if(!TapeLibraryMgr::Instance()->AddUpdateTapeGroupForSwift()){
-        LogError("Failed to and/update tape group for swift node.");
-    }
+	// add or update tape group for openstack swift node
+	if(!TapeLibraryMgr::Instance()->AddUpdateTapeGroupForSwift()){
+		LogError("Failed to and/update tape group for swift node.");
+	}
 
-    EventInfo("Service_Start", "System service started.");
+	EventInfo("Service_Start", "System service started.");
 
     while(running) {
         sleep(1);

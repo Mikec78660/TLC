@@ -18,12 +18,12 @@
  *      Author: More Zeng
  */
 
+
 #pragma once
 
-#include <string>
-#include <memory>
-#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include "FileOperation.h"
+
 
 namespace bdt
 {
@@ -37,12 +37,12 @@ namespace bdt
                 const fs::path & path,
                 mode_t mode,
                 int flags,
-                const std::string & tape);
+                const string & tape);
 
         FileOperationTape(
                 const fs::path & path,
                 int flags,
-                const std::string & tape);
+                const string & tape);
 
         virtual
         ~FileOperationTape()
@@ -53,10 +53,10 @@ namespace bdt
         GetStat(struct stat & stat);
 
         bool
-        Read(off_t offset, void * buffer, size_t bufsize, size_t & size);
+        Read(off_t offset,void * buffer,size_t bufsize,size_t & size);
 
         bool
-        Write(off_t offset, const void * buffer, size_t bufsize, size_t & size);
+        Write(off_t offset,const void * buffer,size_t bufsize,size_t & size);
 
         bool
         Truncate(off_t length);
@@ -65,9 +65,9 @@ namespace bdt
         Sync(bool data);
 
     private:
-        std::unique_ptr<FileOperation> file_;
+        auto_ptr<FileOperation> file_;
         fs::path path_;
-        std::string tape_;
+        string tape_;
         TapeManagerStop * stop_;
         boost::posix_time::ptime timeEvent_;
 
@@ -75,7 +75,9 @@ namespace bdt
         IsTapeStopped();
 
         void
-        ReportEvent(const std::string & eventID, const std::string & message);
+        ReportEvent(const string & eventID,const string & message);
+
     };
 
 }
+

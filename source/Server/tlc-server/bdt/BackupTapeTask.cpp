@@ -18,15 +18,6 @@
  *      Author: More Zeng
  */
 
-/* Define Boost date‑time dynamic link macro **before** any Boost header is
- * included.  This prevents the header from generating an import
- * declaration for the symbol `boost::posix_time::ptime` which would
- * otherwise cause an unresolved external during linking. */
-#define BOOST_DATE_TIME_DYN_LINK
-
-/* Suppress deprecated Boost timer and bind warnings */
-#define BOOST_TIMER_ENABLE_DEPRECATED
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 #include "stdafx.h"
 #include "BackupTapeTask.h"
@@ -396,7 +387,8 @@ namespace bdt
                 if(allTotalSize % threadSize == 0 && maxThreadNum > 1){
                     maxThreadNum--;
                 }
-                LogDebug("runningNum = " << runningNum << ", driveNum = " << driveNum << ", availableNum = " << availableNum << ", reservedDrive = " << reservedDrive << ", maxThreadNum = " << maxThreadNum << "tapesList.size() = " << tapesList.size());
+                LogDebug("runningNum = " << runningNum << ", driveNum = " << driveNum << ", availableNum = " \
+                        << availableNum << ", reservedDrive = " << reservedDrive << ", maxThreadNum = " << maxThreadNum << "tapesList.size() = " << tapesList.size());
                 vector<PendingTapes>  pendingTapes;
                 int nStarted = 0;
                 for(vector<map<string, off_t> >::iterator itTape = tapesList.begin(); itTape != tapesList.end() && runningNum < availableNum && runningNum < maxThreadNum; itTape++){
@@ -544,7 +536,7 @@ BackupRetry:
             }
             if ( tape_->SetTapeState(
                     tape, TapeManagerInterface::STATE_WRITE ) ) {
-                stateSwitch.AddTapes(vector<string>{tape});
+                stateSwitch.AddTape(tape);
             } else {
                 LogWarn(tape);
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -573,7 +565,7 @@ BackupRetry:
             BackupItem item = items[i];
             fs::path pathRelative = item.path;
             string pathSrc = COMM_META_CACHE_PATH + "/" + uuid_ + pathRelative.string();
-            std::unique_ptr<ExtendedAttribute> eaMerge(new ExtendedAttribute(pathSrc));
+            auto_ptr<ExtendedAttribute> eaMerge(new ExtendedAttribute(pathSrc));
             bool bWrittenToTape = false;
             BOOST_FOREACH( const string & tape, tapes ) {
                 string dstPath = "";
@@ -604,7 +596,7 @@ BackupRetry:
                 }
 
                 LogDebug("pathRelative: " << pathRelative.string() << ", pathDst: " << pathDst.string() << ", tape = " << tape);
-                std::unique_ptr<FileOperationInterface> target;
+                auto_ptr<FileOperationInterface> target;
                 try{
                     mode_t mode = 0644;
                     fs::path pFolder = pathDst.parent_path();
@@ -630,10 +622,10 @@ BackupRetry:
                     break;
                 }else{
                     LogDebug("Finished backup file " << pathRelative.string() << " to tape" << tape << ". Dst path: " << pathDst.string());
-                    std::unique_ptr<Inode> inode;
+                    auto_ptr<Inode> inode;
                     inode.reset(meta_->GetInode(pathRelative));
                     off_t offset = 0;
-                    std::unique_ptr<ExtendedAttribute> ea(new ExtendedAttribute(pathDst));
+                    auto_ptr<ExtendedAttribute> ea(new ExtendedAttribute(pathDst));
                     char startblock[1024];
                     memset(startblock,0,sizeof(startblock));
                     int valuesize;

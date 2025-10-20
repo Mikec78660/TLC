@@ -18,14 +18,9 @@
  *      Author: More Zeng
  */
 
+
 #pragma once
 
-#include <string>
-#include <memory>
-#include <fstream>
-#include <boost/thread.hpp>   // provides boost::mutex and other thread utilities
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #ifdef MORE_TEST
 
@@ -35,28 +30,87 @@ namespace bdt
     void
     CreateLogger(const fs::path & folderLogger);
 
-    std::ofstream &
+    ofstream &
     LoggerDebug();
 
-    std::ofstream &
+    ofstream &
     LoggerInfo();
 
-    std::ofstream &
+    ofstream &
     LoggerWarn();
 
-    std::ofstream &
+    ofstream &
     LoggerError();
 
     static boost::mutex mutexLogger;
 
 #define LogIdent                                            \
-        ( std::string(__PRETTY_FUNCTION__)                   \
-            + ":" + boost::lexical_cast<std::string>(__LINE__) \
-            + ":" + boost::lexical_cast<std::string>(errno) )
+        ( string(__PRETTY_FUNCTION__)                       \
+            + ":" + boost::lexical_cast<string>(__LINE__)   \
+            + ":" + boost::lexical_cast<string>(errno) )
 
 #define LogTime                                             \
         boost::posix_time::to_simple_string(                \
             boost::posix_time::microsec_clock::local_time() )
+
+#ifdef DEBUG
+
+#define LogDebug(msg) \
+        { \
+            boost::lock_guard<boost::mutex> lock(mutexLogger); \
+            string timestamp = LogTime; \
+            LoggerDebug() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+        }
+
+#else
+
+#define LogDebug(msg)
+
+#endif
+
+#define LogInfo(msg) \
+        { \
+            boost::lock_guard<boost::mutex> lock(mutexLogger); \
+            string timestamp = LogTime; \
+            LoggerDebug() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+            LoggerInfo() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+        }
+
+#define LogWarn(msg) \
+        { \
+            boost::lock_guard<boost::mutex> lock(mutexLogger); \
+            string timestamp = LogTime; \
+            LoggerDebug() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+            LoggerInfo() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+            LoggerWarn() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+        }
+
+#define LogError(msg) \
+        { \
+            boost::lock_guard<boost::mutex> lock(mutexLogger); \
+            string timestamp = LogTime; \
+            LoggerDebug() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+            LoggerInfo() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+            LoggerWarn() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+            LoggerError() << timestamp << " " << LogIdent << "\t" \
+                << msg << endl; \
+        }
+
+#define EventInfo(eventID,msg)
+#define EventWarn(eventID,msg)
+#define EventError(eventID,msg)
+#define EventCritical(eventID,msg)
+
+}
 
 #else
 
@@ -67,23 +121,63 @@ using namespace ltfs_logger;
 namespace bdt
 {
 
-    std::string
-    GetName();
+string
+GetName();
+
+#define LogDebug(msg)   do {                                    \
+                        int errnoOrigin = errno;                \
+                        LgDebug("vfs", GetName()                \
+                                << string(__PRETTY_FUNCTION__)  \
+                                << " " << errno << " " << msg); \
+                        errno = errnoOrigin;                    \
+                        } while (false);
+#define LogInfo(msg)    do {                                    \
+                        int errnoOrigin = errno;                \
+                        LgInfo("vfs", GetName()                 \
+                                << " " << errno << " " << msg); \
+                        errno = errnoOrigin;                    \
+                        } while (false);
+#define LogWarn(msg)    do {                                    \
+                        int errnoOrigin = errno;                \
+                        LgWarn("vfs", GetName()                 \
+                                << " " << errno << " " << msg); \
+                        errno = errnoOrigin;                    \
+                        } while (false);
+#define LogError(msg)   do {                                    \
+                        int errnoOrigin = errno;                \
+                        LgError("vfs", GetName()                \
+                                << " " << errno << " " << msg); \
+                        errno = errnoOrigin;                    \
+                        } while (false);
+
+#define EventInfo(eventId, msg)    CmnEvent("vfs", EVENT_LEVEL_INFO, eventId, msg)
+#define EventWarn(eventId, msg)    CmnEvent("vfs", EVENT_LEVEL_WARNING, eventId, msg)
+#define EventError(eventId, msg)   CmnEvent("vfs", EVENT_LEVEL_ERR, eventId, msg)
+#define EventCritical(eventId, msg)   CmnEvent("vfs", EVENT_LEVEL_CRITICAL, eventId, msg)
+}
 
 #endif
 
 
+#include "Exception.h"
+#include "FileOperationInterface.h"
+#include "Inode.h"
+#include "Configure.h"
+#include "Throttle.h"
+#include "TapeManagerInterface.h"
+#include "ScheduleInterface.h"
+#include "../tape/TapeLibraryManager.h"
+
+#include "BackendTask.h"
+
+
 namespace bdt
 {
-
     class CacheManager;
     class ReadManager;
     class MetaManager;
-    class TapeManagerInterface;
-    class ScheduleInterface;
-    class ReadManager;
-    class Throttle;
-    class Configure;
+    class BackupTapeTask;
+
 
     class Factory
     {
@@ -93,47 +187,51 @@ namespace bdt
         virtual
         ~Factory();
 
+
         static void
         StartBackendTasks();
 
         static void
         StopBackendTasks();
 
+
         static void
-        SetService(const std::string & service)
+        SetService(const string & service)
         {
             service_ = service;
         }
 
-        static std::string
+        static string
         GetService()
         {
             return service_;
         }
 
+
         static void
-        SetName(const std::string & name)
+        SetName(const string & name)
         {
             name_ = name;
         }
 
-        static std::string
+        static string
         GetName()
         {
             return name_;
         }
 
         static void
-        SetUuid(const std::string & uuid)
+        SetUuid(const string & uuid)
         {
             uuid_ = uuid;
         }
 
-        static std::string
+        static string
         GetUuid()
         {
             return uuid_;
         }
+
 
         static void
         SetMetaFolder(const fs::path & folder)
@@ -147,6 +245,7 @@ namespace bdt
             return folderMeta_;
         }
 
+
         static void
         SetCacheFolder(const fs::path & folder)
         {
@@ -158,6 +257,7 @@ namespace bdt
         {
             return folderCache_;
         }
+
 
         static void
         SetTapeFolder(const fs::path & folder)
@@ -171,8 +271,9 @@ namespace bdt
             return folderTape_;
         }
 
+
         static void
-        CreateThrottle(int interval, long long valve);
+        CreateThrottle(int interval,long long valve);
 
         static void
         ReleaseThrottle();
@@ -182,6 +283,7 @@ namespace bdt
         {
             return throttle_.get();
         }
+
 
         static void
         CreateConfigure();
@@ -195,6 +297,7 @@ namespace bdt
             return configure_.get();
         }
 
+
         static void
         CreateMetaManager();
 
@@ -206,6 +309,7 @@ namespace bdt
         {
             return meta_.get();
         }
+
 
         static void
         CreateTapeManager();
@@ -225,6 +329,7 @@ namespace bdt
             return tape_.get();
         }
 
+
         static void
         CreateCacheManager();
 
@@ -237,6 +342,7 @@ namespace bdt
             return cache_.get();
         }
 
+
         static void
         CreateReadManager();
 
@@ -248,6 +354,7 @@ namespace bdt
         {
             return read_.get();
         }
+
 
         static void
         CreateSchedule();
@@ -267,6 +374,7 @@ namespace bdt
             return schedule_.get();
         }
 
+
         static void
         CreateTapeLibraryManager();
 
@@ -285,17 +393,27 @@ namespace bdt
             return changer_.get();
         }
 
-        static int
-        SocketServerHandle(const std::string & service);
+        static BackupTapeTask * GetBackupTask()
+        {
+        	if(tasks_.size() > 0){
+        		return (BackupTapeTask*)tasks_[0];
+        	}
+        	return NULL;
+        }
 
         static int
-        SocketClientHandle(const std::string & service);
+        SocketServerHandle(const string & service);
+
+        static int
+        SocketClientHandle(const string & service);
 
         static bool
-        GetRelativePathFromCachePath(const fs::path & pathCache, fs::path & path);
+        GetRelativePathFromCachePath(
+                const fs::path & pathCache, fs::path & path);
 
         static bool
-        GetRelativePathFromMetaPath(const fs::path & pathMeta, fs::path & path);
+        GetRelativePathFromMetaPath(
+                const fs::path & pathMeta, fs::path & path);
 
         static bool
         GetMetaPathFromCachePath(const fs::path & pathCache, fs::path & path);
@@ -304,31 +422,34 @@ namespace bdt
         GetCachePathFromMetaPath(const fs::path & pathMeta, fs::path & path);
 
     private:
-        static std::string service_;
-        static std::string name_;
-        static std::string uuid_;
+        static string service_;
+        static string name_;
+        static string uuid_;
         static fs::path folderMeta_;
         static fs::path folderCache_;
         static fs::path folderTape_;
-        static std::unique_ptr<Configure> configure_;
-        static std::unique_ptr<Throttle> throttle_;
-        static std::unique_ptr<MetaManager> meta_;
-        static std::unique_ptr<TapeManagerInterface> tape_;
-        static std::unique_ptr<CacheManager> cache_;
-        static std::unique_ptr<ReadManager> read_;
-        static std::unique_ptr<ScheduleInterface> schedule_;
-        static std::unique_ptr<tape::TapeLibraryManager> changer_;
-        static std::vector<BackendTask *> tasks_;
-        static std::unique_ptr<boost::thread_group> taskGroup_;
-        static std::ofstream logDebug_;
-        static std::ofstream logInfo_;
-        static std::ofstream logWarn_;
-        static std::ofstream logError_;
+        static auto_ptr<Configure> configure_;
+        static auto_ptr<Throttle> throttle_;
+        static auto_ptr<MetaManager> meta_;
+        static auto_ptr<TapeManagerInterface> tape_;
+        static auto_ptr<CacheManager> cache_;
+        static auto_ptr<ReadManager> read_;
+        static auto_ptr<ScheduleInterface> schedule_;
+        static auto_ptr<tape::TapeLibraryManager> changer_;
+
+        static vector<BackendTask *> tasks_;
+        static auto_ptr<boost::thread_group> taskGroup_;
+
+        static ofstream logDebug_;
+        static ofstream logInfo_;
+        static ofstream logWarn_;
+        static ofstream logError_;
         static boost::mutex logMutex_;
-        static const std::string pathSocket_;
+
+        static string const pathSocket_;
     };
 
-inline std::string
+inline string
 GetName()
 {
     return Factory::GetName();
