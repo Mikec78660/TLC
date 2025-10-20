@@ -18,6 +18,15 @@
  *      Author: More Zeng
  */
 
+/* Define Boost date‑time dynamic link macro **before** any Boost header is
+ * included.  This prevents the header from generating an import
+ * declaration for the symbol `boost::posix_time::ptime` which would
+ * otherwise cause an unresolved external during linking. */
+#define BOOST_DATE_TIME_DYN_LINK
+
+/* Suppress deprecated Boost timer and bind warnings */
+#define BOOST_TIMER_ENABLE_DEPRECATED
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 #include "stdafx.h"
 #include "BackupTapeTask.h"
@@ -387,8 +396,7 @@ namespace bdt
                 if(allTotalSize % threadSize == 0 && maxThreadNum > 1){
                     maxThreadNum--;
                 }
-                LogDebug("runningNum = " << runningNum << ", driveNum = " << driveNum << ", availableNum = " \
-                        << availableNum << ", reservedDrive = " << reservedDrive << ", maxThreadNum = " << maxThreadNum << "tapesList.size() = " << tapesList.size());
+                LogDebug("runningNum = " << runningNum << ", driveNum = " << driveNum << ", availableNum = " << availableNum << ", reservedDrive = " << reservedDrive << ", maxThreadNum = " << maxThreadNum << "tapesList.size() = " << tapesList.size());
                 vector<PendingTapes>  pendingTapes;
                 int nStarted = 0;
                 for(vector<map<string, off_t> >::iterator itTape = tapesList.begin(); itTape != tapesList.end() && runningNum < availableNum && runningNum < maxThreadNum; itTape++){
@@ -536,7 +544,7 @@ BackupRetry:
             }
             if ( tape_->SetTapeState(
                     tape, TapeManagerInterface::STATE_WRITE ) ) {
-                stateSwitch.AddTape(tape);
+                stateSwitch.AddTapes(tape);
             } else {
                 LogWarn(tape);
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
