@@ -18,16 +18,13 @@
  *      Author: More Zeng
  */
 
-
 #pragma once
-
 
 namespace bdt
 {
 
     class InodeHandler;
     class MetaDatabase;
-
 
     struct BackupItem
     {
@@ -36,7 +33,6 @@ namespace bdt
         off_t size;
         boost::posix_time::ptime time;
     };
-
 
     class MetaManager
     {
@@ -93,7 +89,7 @@ namespace bdt
         boost::mutex mutex_;
 
         fs::path folder_;
-        auto_ptr<MetaDatabase> database_;
+        std::unique_ptr<MetaDatabase> database_;
         CacheManager * cache_;
 
         typedef map<fs::path, InodeHandler *> MapHandlerType;
@@ -104,7 +100,7 @@ namespace bdt
 
         boost::posix_time::ptime check_;
 
-        auto_ptr<boost::thread> checkHandlersThread_;
+        std::unique_ptr<boost::thread> checkHandlersThread_;
 
         void
         CheckHandlersTask();
@@ -126,4 +122,3 @@ namespace bdt
     };
 
 }
-

@@ -18,12 +18,9 @@
  *      Author: More Zeng
  */
 
-
 #pragma once
 
-
 #include "FileOperation.h"
-
 
 namespace bdt
 {
@@ -65,7 +62,7 @@ namespace bdt
         Sync(bool data);
 
     private:
-        auto_ptr<FileOperation> file_;
+        std::unique_ptr<FileOperation> file_;
         fs::path path_;
         string tape_;
         TapeManagerStop * stop_;
@@ -80,4 +77,3 @@ namespace bdt
     };
 
 }
-

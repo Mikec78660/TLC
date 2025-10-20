@@ -18,9 +18,7 @@
  *      Author: More Zeng
  */
 
-
 #pragma once
-
 
 #ifdef MORE_TEST
 
@@ -170,6 +168,7 @@ GetName();
 
 #include "BackendTask.h"
 
+#include <memory>   // added for std::unique_ptr
 
 namespace bdt
 {
@@ -428,28 +427,28 @@ namespace bdt
         static fs::path folderMeta_;
         static fs::path folderCache_;
         static fs::path folderTape_;
-        static auto_ptr<Configure> configure_;
-        static auto_ptr<Throttle> throttle_;
-        static auto_ptr<MetaManager> meta_;
-        static auto_ptr<TapeManagerInterface> tape_;
-        static auto_ptr<CacheManager> cache_;
-        static auto_ptr<ReadManager> read_;
-        static auto_ptr<ScheduleInterface> schedule_;
-        static auto_ptr<tape::TapeLibraryManager> changer_;
+        static std::unique_ptr<Configure> configure_;
+        static std::unique_ptr<Throttle> throttle_;
+        static std::unique_ptr<MetaManager> meta_;
+        static std::unique_ptr<TapeManagerInterface> tape_;
+        static std::unique_ptr<CacheManager> cache_;
+        static std::unique_ptr<ReadManager> read_;
+        static std::unique_ptr<ScheduleInterface> schedule_;
+        static std::unique_ptr<tape::TapeLibraryManager> changer_;
 
-        static vector<BackendTask *> tasks_;
-        static auto_ptr<boost::thread_group> taskGroup_;
+        static std::vector<BackendTask *> tasks_;
+        static std::unique_ptr<boost::thread_group> taskGroup_;
 
-        static ofstream logDebug_;
-        static ofstream logInfo_;
-        static ofstream logWarn_;
-        static ofstream logError_;
+        static std::ofstream logDebug_;
+        static std::ofstream logInfo_;
+        static std::ofstream logWarn_;
+        static std::ofstream logError_;
         static boost::mutex logMutex_;
 
-        static string const pathSocket_;
+        static std::string const pathSocket_;
     };
 
-inline string
+inline std::string
 GetName()
 {
     return Factory::GetName();

@@ -544,7 +544,7 @@ BackupRetry:
             }
             if ( tape_->SetTapeState(
                     tape, TapeManagerInterface::STATE_WRITE ) ) {
-                stateSwitch.AddTapes(tape);
+                stateSwitch.AddTapes(vector<string>{tape});
             } else {
                 LogWarn(tape);
                 boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -573,7 +573,7 @@ BackupRetry:
             BackupItem item = items[i];
             fs::path pathRelative = item.path;
             string pathSrc = COMM_META_CACHE_PATH + "/" + uuid_ + pathRelative.string();
-            auto_ptr<ExtendedAttribute> eaMerge(new ExtendedAttribute(pathSrc));
+            std::unique_ptr<ExtendedAttribute> eaMerge(new ExtendedAttribute(pathSrc));
             bool bWrittenToTape = false;
             BOOST_FOREACH( const string & tape, tapes ) {
                 string dstPath = "";
@@ -604,7 +604,7 @@ BackupRetry:
                 }
 
                 LogDebug("pathRelative: " << pathRelative.string() << ", pathDst: " << pathDst.string() << ", tape = " << tape);
-                auto_ptr<FileOperationInterface> target;
+                std::unique_ptr<FileOperationInterface> target;
                 try{
                     mode_t mode = 0644;
                     fs::path pFolder = pathDst.parent_path();
@@ -630,10 +630,10 @@ BackupRetry:
                     break;
                 }else{
                     LogDebug("Finished backup file " << pathRelative.string() << " to tape" << tape << ". Dst path: " << pathDst.string());
-                    auto_ptr<Inode> inode;
+                    std::unique_ptr<Inode> inode;
                     inode.reset(meta_->GetInode(pathRelative));
                     off_t offset = 0;
-                    auto_ptr<ExtendedAttribute> ea(new ExtendedAttribute(pathDst));
+                    std::unique_ptr<ExtendedAttribute> ea(new ExtendedAttribute(pathDst));
                     char startblock[1024];
                     memset(startblock,0,sizeof(startblock));
                     int valuesize;

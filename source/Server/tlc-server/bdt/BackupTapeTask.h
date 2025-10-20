@@ -30,7 +30,6 @@
 /* Boost headers */
 #include <boost/thread.hpp>   // provides boost::thread and boost::thread_group
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/timer/timer.hpp>   // non‑deprecated timer header
 
 /* Project headers */
 #include "MetaManager.h"
@@ -120,8 +119,8 @@ namespace bdt
         void InsertTapeBackupItem(const BackupItem & item);
         void DeleteTapeBackupItem(const BackupItem & item);
 
-        // Use a vector of boost::thread instead of boost::thread_group to avoid missing header
-        std::unique_ptr<std::vector<boost::thread>> threads_;
+        // Use boost::thread_group to manage backup threads
+        std::unique_ptr<boost::thread_group> threads_;
         TapeManagerInterface * tape_;
         CacheManager * cache_;
         ScheduleInterface * schedule_;
@@ -132,7 +131,7 @@ namespace bdt
         std::map<std::string, MultipleFile> multipleFiles_;
         boost::mutex 		filesMutex_;
         std::string				uuid_;
-        std::auto_ptr<CatalogDbManager> catalogDb_;
+        std::unique_ptr<CatalogDbManager> catalogDb_;
         FileMetaParser      parser_;
     };
 
