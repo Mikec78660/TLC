@@ -23,8 +23,9 @@
 #include <string>
 #include <memory>
 #include <fstream>
-#include <boost/thread.hpp>
-#include <boost/mutex.hpp>
+#include <boost/thread.hpp>   // provides boost::mutex and other thread utilities
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #ifdef MORE_TEST
 
